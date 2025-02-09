@@ -1,9 +1,24 @@
+using Microsoft.VisualBasic;
+
 namespace Ngg;
 
-public class Game
+public static class Game
 {
     private static int _chances { get; set; }
     private static int _target { get; set; }
+    private static bool _restart { get; set; } = true;
+
+    public static void Start()
+    {
+        WelcomeMessage();
+
+        while (_restart)
+        {
+            DifficultySelection();
+            Gameplay();
+            Replay();
+        }
+    }
     
     public static void WelcomeMessage()
     {
@@ -94,5 +109,16 @@ public class Game
     {
         var generator = new Random();
         return generator.Next(1, 100);
+    }
+
+    private static void Replay()
+    {
+        Console.WriteLine("Do you want to play again? Y/N\n");
+
+        var key = Console.ReadKey();
+        if (key.Key != ConsoleKey.Y)
+        {
+            _restart = false;
+        }
     }
 }
