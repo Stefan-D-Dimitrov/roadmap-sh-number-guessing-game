@@ -1,4 +1,4 @@
-using Microsoft.VisualBasic;
+using System.Diagnostics;
 
 namespace Ngg;
 
@@ -7,11 +7,12 @@ public static class Game
     private static int _chances { get; set; }
     private static int _target { get; set; }
     private static bool _restart { get; set; } = true;
+    private static readonly Stopwatch _stopwatch = new Stopwatch();
 
     public static void Start()
     {
         WelcomeMessage();
-
+        
         while (_restart)
         {
             DifficultySelection();
@@ -19,14 +20,14 @@ public static class Game
             Replay();
         }
     }
-    
-    public static void WelcomeMessage()
+
+    private static void WelcomeMessage()
     {
         Console.WriteLine("Welcome to the Number Guessing Game!" +
                           "\nI'm thinking of a number between 1 and 100.");
     }
 
-    public static void DifficultySelection()
+    private static void DifficultySelection()
     {
         Console.WriteLine($"Please select the difficulty level:" +
                           $"\n1. {Difficulty.Easy.ToString()} ({Difficulty.Easy} chances)" +
@@ -43,8 +44,9 @@ public static class Game
         Console.WriteLine($"Great! You have selected the {_chances.ToEnum<Difficulty>().ToString()} difficulty level.");
     }
 
-    public static void Gameplay()
+    private static void Gameplay()
     {
+        _stopwatch.Start();
         Console.WriteLine("Let's start the game!" +
                           "\n");
 
@@ -60,7 +62,8 @@ public static class Game
 
             if (input == _target)
             {
-                Console.WriteLine($"Congratulations! You guessed the correct number in {tries} attempts.");
+                _stopwatch.Stop();
+                Console.WriteLine($"Congratulations! You guessed the correct number in {tries} attempts in {_stopwatch.Elapsed.Seconds} seconds.");
                 return;
             }
 
@@ -72,6 +75,7 @@ public static class Game
         }
         
         Console.WriteLine($"You lose! The target number was {_target}.");
+        _stopwatch.Reset();
         _chances = 0;
         _target = 0;
     }
