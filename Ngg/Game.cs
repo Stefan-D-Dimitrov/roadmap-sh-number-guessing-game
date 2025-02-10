@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Ngg.Hint;
 
 namespace Ngg;
 
@@ -7,7 +8,9 @@ public static class Game
     private static int _chances { get; set; }
     private static int _target { get; set; }
     private static bool _restart { get; set; } = true;
-    private static readonly Stopwatch _stopwatch = new Stopwatch();
+    
+    private static readonly Stopwatch _stopwatch = new();
+    private static readonly HintStrategyFactory _hintStrategyFactory = new();
 
     public static void Start()
     {
@@ -72,6 +75,8 @@ public static class Game
                 : $"Incorrect! The number is greater than {input}.");
 
             tries++;
+            
+            Hint(tries, _target, _chances.ToEnum<Difficulty>());
         }
         
         Console.WriteLine($"You lose! The target number was {_target}.");
@@ -123,6 +128,41 @@ public static class Game
         if (key.Key != ConsoleKey.Y)
         {
             _restart = false;
+        }
+    }
+
+    private static void Hint(int tries, int target, Difficulty difficulty)
+    {
+        if (difficulty == Difficulty.Hard)
+        {
+            return;
+        }
+
+        var hintSettings = new Dictionary<Difficulty, Dictionary<int, HintType>>()
+        {
+            {
+                Difficulty.Easy, new Dictionary<int, HintType>()
+                {
+                    { 3, HintType.Broad },
+                    { 6, HintType.Specific },
+                    { 9, HintType.VerySpecific }
+                }
+            },
+            {
+                Difficulty.Medium, new Dictionary<int, HintType>()
+                {
+                    { 3, HintType.Broad },
+                    { 6, HintType.Specific }
+                }
+            }
+        };
+
+        if (hintSettings.TryGetValue(difficulty, out var triesToHint)
+            && triesToHint.TryGetValue(tries, out var hintType))
+        {
+            _hintStrategyFactory
+                .CreateHintStrategy(hintType)
+                .Hint(target);
         }
     }
 }
